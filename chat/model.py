@@ -4,7 +4,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 class ChatBot:
-  def __init__(self, model_name='microsoft/DialoGPT-small'):
+  def __init__(self, model_name='microsoft/DialoGPT-medium'):
     self.model, self.tokenizer = self.load_model(model_name)
     self.chat_history_ids = None
     

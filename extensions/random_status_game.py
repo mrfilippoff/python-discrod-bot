@@ -13,7 +13,10 @@ GAMES = [
     'Half Life',
     'Hell Let Loose',
     'Battlefield 1',
-    'Pornhub'
+    'Pornhub',
+    'with your mom\'s tits',
+    'with poops',
+    'dicks'
 ]
 
 
@@ -21,12 +24,12 @@ class RandomStatusGame(commands.Cog):
     # A simple plugin that will cycle based on a preset list of games
     # https: // github.com / CarlosFdez / SpueBox / blob / master / plugins / randomgame.py
 
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self._running = False
 
     async def set_status(self, title):
-        await self.client.change_presence(activity=discord.Game(name=title, type=1))
+        await self.bot.change_presence(activity=discord.Game(name=title, type=1))
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -36,14 +39,13 @@ class RandomStatusGame(commands.Cog):
 
         self._running = True
         try:
-            while not self.client.is_closed():
+            while not self.bot.is_closed():
                 name = random.choice(GAMES)
-                await self.client.change_presence(activity=discord.Game(name=name, type=1))
+                await self.bot.change_presence(activity=discord.Game(name=name, type=1))
                 await asyncio.sleep(300)
         finally:
             self._running = False
 
 
-def setup(client):
-    client.add_cog(RandomStatusGame(client))
-
+async def setup(bot):
+    await bot.add_cog(RandomStatusGame(bot))

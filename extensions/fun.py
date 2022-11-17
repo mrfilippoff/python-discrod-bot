@@ -48,8 +48,8 @@ def user_format(user):
 
 
 class Fun(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -178,5 +178,6 @@ class Fun(commands.Cog):
             return await ctx.send(f"I cann't find the fuckin' body with name **{args[0]}**")
 
 
-def setup(client):
-    client.add_cog(Fun(client))
+
+async def setup(bot):
+    await bot.add_cog(Fun(bot))

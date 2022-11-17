@@ -46,8 +46,8 @@ BOT_OAUTH = 'https://discord.com/api/oauth2/authorize?client_id=5824758296034673
 
 
 class Manage(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.active_role_messages = []
 
     @commands.Cog.listener()
@@ -131,13 +131,13 @@ class Manage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.client.user:
+        if message.author == self.bot.user:
             return
 
         is_private = not message.guild
 
         if is_private:
-            guild = self.client.get_guild(TEA_GUILD)
+            guild = self.bot.get_guild(TEA_GUILD)
             member = find(lambda m: m == message.author, guild.members)
 
             if not member.premium_since:
@@ -310,8 +310,8 @@ class Manage(commands.Cog):
         return filter(lambda r: r.name != EVERYONE and r.is_available and not r.is_managed, roles)
 
     def is_me(self, message):
-        return message.author == self.client.user
+        return message.author == self.bot.user
 
 
-def setup(client):
-    client.add_cog(Manage(client))
+async def setup(bot):
+    await bot.add_cog(Manage(bot))

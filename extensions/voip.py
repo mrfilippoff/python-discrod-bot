@@ -32,8 +32,8 @@ def is_emoji_in_channel_name(name):
 
 
 class Voip(commands.Cog):
-    def __init__(self, client):
-        self.client = client
+    def __init__(self, bot):
+        self.bot = bot
         self.vc_ac = None
 
     @commands.Cog.listener()
@@ -104,5 +104,5 @@ class Voip(commands.Cog):
         return await ctx.send(f'Done!')
 
 
-def setup(client):
-    client.add_cog(Voip(client))
+async def setup(bot):
+    await bot.add_cog(Voip(bot))

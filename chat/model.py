@@ -27,7 +27,7 @@ class ChatBot:
       message_ids,
       pad_token_id=self.tokenizer.eos_token_id, 
       do_sample=True, 
-      max_new_tokens=1000, 
+      max_new_tokens=1500, 
       top_k=100, 
       top_p=0.95,
       temperature=0.8

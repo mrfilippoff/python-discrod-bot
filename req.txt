@@ -5,7 +5,6 @@ certifi==2020.6.20
 cffi==1.14.0
 chardet==3.0.4
 discord.py==1.6.0
-giphy-client==1.0.0
 idna==2.9
 multidict==4.7.6
 peewee==3.13.3

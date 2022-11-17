@@ -3,7 +3,6 @@ import random
 import asyncio
 from discord.ext import commands
 GAMES = [
-    'Call of Duty: Modern Warfare',
     'Battlefield 3',
     'Battlefield 4',
     'Minecraft',
@@ -14,6 +13,9 @@ GAMES = [
     'Hell Let Loose',
     'Battlefield 1',
     'Pornhub',
+    'New World',
+    'TV',
+    'Onlyfans',
     'with your mom\'s tits',
     'with poops',
     'dicks'
@@ -21,9 +23,6 @@ GAMES = [
 
 
 class RandomStatusGame(commands.Cog):
-    # A simple plugin that will cycle based on a preset list of games
-    # https: // github.com / CarlosFdez / SpueBox / blob / master / plugins / randomgame.py
-
     def __init__(self, bot):
         self.bot = bot
         self._running = False
@@ -33,7 +32,6 @@ class RandomStatusGame(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        # on_ready could be called multiple times, so we try to only go at it once
         if self._running:
             return
 
@@ -45,7 +43,6 @@ class RandomStatusGame(commands.Cog):
                 await asyncio.sleep(300)
         finally:
             self._running = False
-
 
 async def setup(bot):
     await bot.add_cog(RandomStatusGame(bot))

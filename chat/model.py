@@ -1,4 +1,3 @@
-import datetime
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -6,7 +5,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 class ChatBot:
   def __init__(self, model_name='microsoft/DialoGPT-large'):
     self.model, self.tokenizer = self.load_model(model_name)
-    self.chat_history = []
     self.chat_history_ids = None
     
   def load_model(self, model_name):
@@ -27,7 +25,7 @@ class ChatBot:
       message_ids,
       pad_token_id=self.tokenizer.eos_token_id, 
       do_sample=True, 
-      max_length=1000, 
+      max_new_tokens=1000, 
       top_k=100, 
       top_p=0.95,
       temperature=0.8

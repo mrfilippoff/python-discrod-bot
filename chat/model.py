@@ -26,9 +26,9 @@ class ChatBot:
     self.chat_history_ids = self.model.generate(
       message_ids,
       pad_token_id=self.tokenizer.eos_token_id, 
-      do_sample=True, 
-      max_new_tokens=1000, 
-      top_k=100, 
+      #do_sample=True, 
+      max_new_tokens=10, 
+      top_k=10, 
       top_p=0.95,
       temperature=0.8
     )

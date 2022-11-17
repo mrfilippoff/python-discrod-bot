@@ -29,7 +29,7 @@ class MyBot(commands.Bot):
         # self.background_task.start()
         self.session = aiohttp.ClientSession()
 
-        for filename in os.listdir(f'.\{EXTENSION_DIR}'):
+        for filename in os.listdir(f'./{EXTENSION_DIR}'):
             if filename.endswith('.py'):
                 await self.load_extension(f'{EXTENSION_DIR}.{filename[:-3]}')
 

@@ -12,7 +12,7 @@ class Chat(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         to_everyone_random = random.random() + random.random() > 1.2 and datetime.datetime.today().second % 2
-
+        
         if self.bot.user.mentioned_in(message):
             await self.reply(message)
         else:
@@ -21,8 +21,10 @@ class Chat(commands.Cog):
 
 
     async def reply(self, message):
-        self.chatbot.get_reply(message.clean_content)
-        await message.channel.send('..')
+        async with message.channel.typing():
+            await asyncio.sleep(1)
+            text = self.chatbot.get_reply(message.clean_content)
+        await message.channel.send(text)
 
 
 async def setup(bot):

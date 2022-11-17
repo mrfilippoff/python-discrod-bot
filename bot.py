@@ -18,6 +18,7 @@ intents.guild_messages = True
 intents.reactions = True
 intents.voice_states = True
 intents.messages = True
+intents.message_content = True
 
 
 class MyBot(commands.Bot):

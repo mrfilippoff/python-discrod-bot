@@ -1,8 +1,7 @@
 import torch
-import asyncio
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-
+# based on https://huggingface.co/microsoft/DialoGPT-medium
 class ChatBot:
   def __init__(self, model_name='microsoft/DialoGPT-medium'):
     self.model, self.tokenizer = self.load_model(model_name)
@@ -13,16 +12,12 @@ class ChatBot:
     model = AutoModelForCausalLM.from_pretrained(model_name)
     return model, tokenizer
 
-  #@asyncio.coroutine
   def get_reply(self, user_message):
-    # encode the new user message to be used by our model
     message_ids = self.tokenizer.encode(user_message + self.tokenizer.eos_token, return_tensors='pt')
 
-    # append the encoded message to the past history so the model is aware of past context
     if self.chat_history_ids is not None:
       message_ids = torch.cat([self.chat_history_ids, message_ids], dim=-1)
 
-    # generated a response by the bot 
     self.chat_history_ids = self.model.generate(
       message_ids,
       pad_token_id=self.tokenizer.eos_token_id, 

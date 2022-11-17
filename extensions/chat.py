@@ -27,10 +27,10 @@ class Chat(commands.Cog):
 
 
     async def reply(self, message):
+        print('send')
         async with message.channel.typing():
-            await asyncio.sleep(1)
             text = self.chatbot.get_reply(message.clean_content)
-        await message.channel.send(text)
+            await message.channel.send(text)
 
 
 async def setup(bot):

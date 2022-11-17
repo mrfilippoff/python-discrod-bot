@@ -13,18 +13,6 @@ LOGGER = False
 TEA_GUILD = 434382331835318278  # real
 # TEA_GUILD = 574605836308054027 #testeacles
 
-BOT_ANSWERS = ['Hey! Wazzup Bro?',
-               'very nice',
-               'gotcha',
-               'uhh..ok.',
-               '胖家伙...',
-               'hey i am watchin you dummy',
-               'booom',
-               'good one', 'invite me',
-               'plz, shut up', 'got a hair cake?',
-               'o my balls', 'copy/paset it', 'is not?',
-               'uh?', 'ahhrrr...ha-ha', 'ha-ha', 'still fuckable?',
-               'no today', 'little beach', 'you are not', 'blbnt ds yf[eq!', '耳付きのお尻']
 
 if LOGGER:
     logger = logging.getLogger('peewee')
@@ -129,31 +117,34 @@ class Manage(commands.Cog):
         if message.id in self.active_role_messages:
             self.active_role_messages.remove(message.id)
 
-    # @commands.Cog.listener()
-    # async def on_message(self, message):
-    #     if message.author == self.bot.user:
-    #         return
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if message.author == self.bot.user:
+            return
 
-    #     is_private = not message.guild
+        is_private = not message.guild
 
-    #     if is_private:
-    #         guild = self.bot.get_guild(TEA_GUILD)
-    #         member = find(lambda m: m == message.author, guild.members)
+        if is_private:
+            guild = self.bot.get_guild(TEA_GUILD)
+            member = find(lambda m: m == message.author, guild.members)
 
-    #         if not member.premium_since:
-    #             return await member.send('Fuck Off, twat')
+            if not member.premium_since:
+                return await member.send('Fuck Off')
 
-    #         return await guild_send(guild, content=message.content)
+            return await guild_send(guild, content=message.content)
 
-    #     random_int = random.choice(range(0, 10))
-    #     if message.author.premium_since and random_int == 1:
-    #         return await random_reactions(message, 2, 30)
-    #     elif message.type == 'new_member':
-    #         return await random_reactions(message, 1)
-    #     elif message.type == 'premium_guild_subscription':
-    #         return await random_reactions(message)
-    #     else:
-    #         pass
+        random_int = random.choice(range(0, 10))
+
+        if message.author.premium_since and random_int == 1:
+            return await random_reactions(message, 2, 30)
+
+        elif message.type == 'new_member':
+            return await random_reactions(message, 1)
+
+        elif message.type == 'premium_guild_subscription':
+            return await random_reactions(message)
+        else:
+            pass
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
@@ -162,7 +153,7 @@ class Manage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_unban(self, guild, user):
-        message = f'Oh! Look this: **{user.name}** was forgiven by the gods and he can come back to us! ' \
+        message = f'Oh! Look this: **{user.name}** was forgiven by the gods and he can come back to us!' \
                     f'Prepare your cocks!'
         return await guild_send(guild, content=message)
 
@@ -261,10 +252,6 @@ class Manage(commands.Cog):
         finally:
             return await ctx.send(f'Role successfully updated')
 
-    @commands.command(help="Invite bot url")
-    async def invite(self, ctx):
-        await ctx.send(f'Invite me bro: {BOT_OAUTH}')
-
     @commands.command(help="Delete all N-messages [manage_guild]")
     @commands.has_permissions(manage_guild=True)
     async def purge_channel(self, ctx, limit=10):
@@ -275,18 +262,6 @@ class Manage(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def purge_self(self, ctx, limit=100):
         await ctx.channel.purge(limit=limit, check=self.is_me)
-
-    """
-    @commands.command(help="Retrive audit log data")
-    @commands.has_permissions(manage_guild=True)
-    async def audit(self, ctx, action="kick"):
-        action = AuditLogAction[action]
-        print(action)
-        mention = ctx.message.mentions[0] if ctx.message.mentions else None
-        entries = await ctx.guild.audit_logs(limit=None).flatten()
-        print(entries)
-        await ctx.channel.send('moderation actions.'.format(len(entries)))
-    """
 
     # noinspection PyMethodMayBeStatic
     def format_roles_list(self, role) -> str:

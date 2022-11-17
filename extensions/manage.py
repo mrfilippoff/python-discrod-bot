@@ -2,6 +2,7 @@ import asyncio
 import logging
 from discord.ext import commands
 from discord.utils import get, find
+from discord import MessageType
 from utils import get_emoji, guild_send, random_reactions, public_roles
 import db
 from typing import List
@@ -122,33 +123,22 @@ class Manage(commands.Cog):
         if message.author == self.bot.user:
             return
 
-        is_private = not message.guild
-
-        if is_private:
-            guild = self.bot.get_guild(TEA_GUILD)
-            member = find(lambda m: m == message.author, guild.members)
-
-            if not member.premium_since:
-                return await member.send('Fuck Off')
-
-            return await guild_send(guild, content=message.content)
-
         random_int = random.choice(range(0, 10))
 
         if message.author.premium_since and random_int == 1:
             return await random_reactions(message, 2, 30)
 
-        elif message.type == 'new_member':
+        elif message.type == MessageType.new_member:
             return await random_reactions(message, 1)
 
-        elif message.type == 'premium_guild_subscription':
+        elif message.type == MessageType.premium_guild_subscription:
             return await random_reactions(message)
         else:
             pass
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
-        message = f'Holy shit: **{user.name}** was banned like a bad motherfucker!'
+        message = f'Holy shit: **{user.name}**\'s gone! Damn'
         return await guild_send(guild, content=message)
 
     @commands.Cog.listener()

@@ -1,5 +1,6 @@
 import random
 import datetime
+import asyncio
 from discord.ext import commands
 import chat
 
@@ -10,18 +11,19 @@ class Chat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-        clean_message = message.clean_content
         to_everyone_random = random.random() + random.random() > 1.2 and datetime.datetime.today().second % 2
 
         if self.bot.user.mentioned_in(message):
-            answer = self.chatbot.get_reply(clean_message)
-            await message.channel.send(answer)
-
+            await self.reply(message)
         else:
             if (to_everyone_random):
-                answer = self.chatbot.get_reply(clean_message)
-                await message.channel.send(answer)
-            
+                await self.reply(message)
+
+
+    async def reply(self, message):
+        self.chatbot.get_reply(message.clean_content)
+        await message.channel.send('..')
+
 
 async def setup(bot):
     await bot.add_cog(Chat(bot))

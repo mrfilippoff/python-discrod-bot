@@ -1,4 +1,5 @@
 import torch
+import asyncio
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
@@ -12,6 +13,7 @@ class ChatBot:
     model = AutoModelForCausalLM.from_pretrained(model_name)
     return model, tokenizer
 
+  #@asyncio.coroutine
   def get_reply(self, user_message):
     # encode the new user message to be used by our model
     message_ids = self.tokenizer.encode(user_message + self.tokenizer.eos_token, return_tensors='pt')

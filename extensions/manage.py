@@ -129,31 +129,31 @@ class Manage(commands.Cog):
         if message.id in self.active_role_messages:
             self.active_role_messages.remove(message.id)
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
+    # @commands.Cog.listener()
+    # async def on_message(self, message):
+    #     if message.author == self.bot.user:
+    #         return
 
-        is_private = not message.guild
+    #     is_private = not message.guild
 
-        if is_private:
-            guild = self.bot.get_guild(TEA_GUILD)
-            member = find(lambda m: m == message.author, guild.members)
+    #     if is_private:
+    #         guild = self.bot.get_guild(TEA_GUILD)
+    #         member = find(lambda m: m == message.author, guild.members)
 
-            if not member.premium_since:
-                return await member.send('Fuck Off, twat')
+    #         if not member.premium_since:
+    #             return await member.send('Fuck Off, twat')
 
-            return await guild_send(guild, content=message.content)
+    #         return await guild_send(guild, content=message.content)
 
-        random_int = random.choice(range(0, 10))
-        if message.author.premium_since and random_int == 1:
-            return await random_reactions(message, 2, 30)
-        elif message.type == 'new_member':
-            return await random_reactions(message, 1)
-        elif message.type == 'premium_guild_subscription':
-            return await random_reactions(message)
-        else:
-            pass
+    #     random_int = random.choice(range(0, 10))
+    #     if message.author.premium_since and random_int == 1:
+    #         return await random_reactions(message, 2, 30)
+    #     elif message.type == 'new_member':
+    #         return await random_reactions(message, 1)
+    #     elif message.type == 'premium_guild_subscription':
+    #         return await random_reactions(message)
+    #     else:
+    #         pass
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):

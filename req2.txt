@@ -37,3 +37,7 @@ urllib3==1.25.9
 websockets==8.1
 yarl==1.4.2
 youtube-dl==2020.6.6
+httpx==0.23.0
+beautifulsoup4==4.11.1
+youtube-dl==2021.12.17
+ytdl==1.0.0rc5

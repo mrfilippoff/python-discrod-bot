@@ -201,7 +201,7 @@ class Manage(commands.Cog):
 
     @commands.command(help="About the bot")
     async def about(self, ctx):
-        message = await ctx.send('[TEA] Bot created by traxxxl & co. 2020..Role managment by emojis-clicking lol')
+        message = await ctx.send('[TEA] Bot created by traxxxl & co. 2020..Role managment by emojis-clicking and some userful features')
         await random_reactions(message, 1)
 
     @commands.command(help="Makes a relation between emoji and role [manage_guild]")

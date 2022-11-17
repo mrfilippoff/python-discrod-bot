@@ -1,6 +1,6 @@
 import random
+import re
 import datetime
-import asyncio
 from discord.ext import commands
 import chat
 from discord import MessageType
@@ -17,7 +17,7 @@ class Chat(commands.Cog):
         if message.author.bot or message.type is not MessageType.default or len(message.attachments) > 0:
             return
 
-        to_everyone_random = random.random() + random.random() > 1.5 and datetime.datetime.today().second % 2
+        to_everyone_random = random.random() + random.random() > 1.65 and datetime.datetime.today().second % 2
 
         if self.bot.user.mentioned_in(message):
             await self.reply(message)
@@ -27,9 +27,10 @@ class Chat(commands.Cog):
 
 
     async def reply(self, message):
-        print('send')
+        prepare_message = re.sub('@.*? ', '', message.clean_content) 
+
         async with message.channel.typing():
-            text = self.chatbot.get_reply(message.clean_content)
+            text = self.chatbot.get_reply(prepare_message)
             await message.channel.send(text)
 
 

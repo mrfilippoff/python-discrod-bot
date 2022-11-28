@@ -34,7 +34,7 @@ def is_emoji_in_channel_name(name):
 class Voip(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.vc_ac = None
+        self.vc_ac = '<<'
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):

@@ -33,7 +33,7 @@ class Chat(commands.Cog):
             text = self.chatbot.get_reply(prepare_message)
 
             if mention:
-                if random.random() + random.random() > 1.4: 
+                if random.random() + random.random() > 1.2: 
                     await random_reactions(message, 1, 5)
 
                 await message.channel.send(f'{message.author.mention} {text}')

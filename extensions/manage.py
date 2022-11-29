@@ -1,13 +1,15 @@
 import asyncio
 import logging
-from discord.ext import commands
-from discord.utils import get, find
+from discord.ext import commands, tasks
+from discord.utils import get
 from discord import MessageType
 from utils import get_emoji, guild_send, random_reactions, public_roles
 import db
 from typing import List
 import random
 
+RECYCLED_LIMIT = 3
+RECYCLED_EMOJI = '♻️'
 
 LOGGER = False
 
@@ -77,17 +79,6 @@ class Manage(commands.Cog):
     async def on_member_remove(self, member):
         await guild_send(member.guild, content=f'Ladies and gentlemen! **{member.display_name}** has left the server!')
 
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        messages = [
-            "I'm here for the first time. please take care of my sausage",
-            "Hello children!",
-            "What's up, dudes?",
-            "We should have fuckin' shotguns",
-            "If I'm curt with you, it's because time is a factor. I think fast, I talk fast. Hello!",
-            "Hey, i am not a robot. Like for real, Skynet happend in an other universe ... or did it?"
-        ]
-        await guild_send(guild, content=random.choice(messages))
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -100,8 +91,20 @@ class Manage(commands.Cog):
             except Exception as e:
                 pass
 
-        await reaction.message.add_reaction(reaction.emoji)
+        if reaction.emoji != RECYCLED_EMOJI and reaction.emoji != '🤖':
+            await reaction.message.add_reaction(reaction.emoji)
 
+        if reaction.emoji == RECYCLED_EMOJI and reaction.count == RECYCLED_LIMIT and len(reaction.message.attachments) > 0:
+            alert = await reaction.message.reply(f'{RECYCLED_LIMIT} people says you posted an old blah content, if you feel ashamed to delete it, let me do it?')
+            await asyncio.sleep(60)
+
+            try:
+                await alert.delete()
+                await reaction.message.delete()
+                await guild_send(reaction.message.author.guild, content=f'Ladies and gentlemen! **{reaction.message.author.display_name}** has posted a bit of an old shit and i have already removed it. God bless me! ✝️')
+            except Exception as e:
+                pass
+            
     @commands.Cog.listener()
     async def on_reaction_remove(self, reaction, user):
         if reaction.message.id in self.active_role_messages and reaction.message.author != user:
@@ -276,6 +279,11 @@ class Manage(commands.Cog):
 
     def is_me(self, message):
         return message.author == self.bot.user
+    
+    # @tasks.loop(seconds=5.0)
+    # async def check_recycle(self):
+    #     self.bot.
+
 
 
 async def setup(bot):

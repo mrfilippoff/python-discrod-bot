@@ -30,7 +30,7 @@ class Chat(commands.Cog):
         prepare_message = re.sub('@.*? ', '', message.clean_content) 
 
         async with message.channel.typing():
-            text = self.chatbot.get_reply(prepare_message)
+            text = self.chatbot.get_reply(prepare_message or 'i said No')
 
             if mention:
                 if random.random() + random.random() > 1.2: 

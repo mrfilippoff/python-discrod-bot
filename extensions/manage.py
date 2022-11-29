@@ -95,7 +95,7 @@ class Manage(commands.Cog):
             await reaction.message.add_reaction(reaction.emoji)
 
         if reaction.emoji == RECYCLED_EMOJI and reaction.count == RECYCLED_LIMIT and len(reaction.message.attachments) > 0:
-            alert = await reaction.message.reply(f'{RECYCLED_LIMIT} people says you posted an old blah content, if you feel ashamed to delete it, let me do it?')
+            alert = await reaction.message.reply(f'Hey {reaction.message.author.mention}! {RECYCLED_LIMIT} people saying you posted an old blah content, if you feel ashamed to delete it, let me do it?')
             await asyncio.sleep(60)
 
             try:

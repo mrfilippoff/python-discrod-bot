@@ -17,7 +17,7 @@ class Chat(commands.Cog):
         if message.author.bot or message.type is not MessageType.default or len(message.attachments) > 0:
             return
 
-        to_everyone_random = random.random() + random.random() > 1.6 and datetime.datetime.today().second % 2
+        to_everyone_random = random.random() + random.random() > 1.55 and datetime.datetime.today().second % 2
 
         if self.bot.user.mentioned_in(message):
             await self.reply(message, True)
@@ -27,10 +27,13 @@ class Chat(commands.Cog):
 
 
     async def reply(self, message, mention=False):
-        prepare_message = re.sub('@.*? ', '', message.clean_content) 
+        prepare_message = re.sub('@.*? ', '', message.clean_content) or None
+
+        if not prepare_message:
+            return
 
         async with message.channel.typing():
-            text = self.chatbot.get_reply(prepare_message or 'i said No')
+            text = self.chatbot.get_reply(prepare_message)
 
             if mention:
                 if random.random() + random.random() > 1.2: 

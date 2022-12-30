@@ -41,12 +41,15 @@ def public_roles(guild):
     result_roles = []
 
     for role in guild.roles:
-        db_role = Role.get_role(role.id)
-        emoji = db_role.emoji or None
-        if not role.managed and role.name != EVERYONE and not db_role.is_available or not emoji:
-            continue
-        result_roles.append({
-            'db': db_role,
-            'dd': role
-        })
+        try:
+            db_role = Role.get_role(role.id)
+            emoji = db_role.emoji or None
+            if not role.managed and role.name != EVERYONE and not db_role.is_available or not emoji:
+                continue
+            result_roles.append({
+                'db': db_role,
+                'dd': role
+            })
+        except Exception:
+            pass
     return result_roles

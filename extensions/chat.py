@@ -33,7 +33,7 @@ class Chat(commands.Cog):
             return
 
         async with message.channel.typing():
-            text = self.chatbot.get_reply(prepare_message)
+            text = self.chatbot.get_reply(prepare_message) or random.choice(['no comments', 'what an idiot!', 'lol'])
 
             if mention:
                 if random.random() + random.random() > 1.2: 

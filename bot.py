@@ -1,8 +1,7 @@
 from dotenv import load_dotenv
-import aiohttp
 import os
 from discord import Intents
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 load_dotenv()
 
@@ -21,7 +20,7 @@ intents.messages = True
 intents.message_content = True
 
 
-class MyBot(commands.Bot):
+class TeaBot(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix='+', intents=intents)
 
@@ -30,5 +29,5 @@ class MyBot(commands.Bot):
             if filename.endswith('.py'):
                 await self.load_extension(f'{EXTENSION_DIR}.{filename[:-3]}')
 
-bot = MyBot()
+bot = TeaBot()
 bot.run(TOKEN)

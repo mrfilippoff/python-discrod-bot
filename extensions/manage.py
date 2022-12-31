@@ -1,8 +1,5 @@
 import asyncio
-import logging
-import db
 import os
-from typing import List
 import random
 from discord.ext import commands
 
@@ -81,19 +78,9 @@ class Manage(commands.Cog):
 
     @commands.hybrid_command(name='my_roles', with_app_command=True)
     async def my_roles(self, ctx):
-        view = RolesView(ctx.guild.roles, ctx.message.author)
-        view.message = await ctx.send('Update your game roles', view=view, ephemeral=True)
-
-
-    @commands.hybrid_command(name='purge_channel', with_app_command=True)
-    @commands.has_permissions(manage_guild=True)
-    async def purge_channel(self, ctx, limit):
-        try:
-            deleted = await ctx.channel.purge(limit=int(limit))
-            await ctx.channel.send('Deleted {} message(s) :yum:'.format(len(deleted)), delete_after=15)
-        except Exception as e:
-            await ctx.channel.reply(f'Oops. Error. {e}')
-
+        """Manage user roles"""
+        view = RolesView(ctx.guild, ctx.message.author)
+        view.message = await ctx.send('Update your game roles right now!', view=view, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Manage(bot))

@@ -1,71 +1,96 @@
 from discord import ui, ButtonStyle, Interaction
-from discord.utils import get
+from global_vars import STFU_USERS, ROLE_COLOR
+
+EMOJI_JOIN = '➕'
+EMOJI_LEFT = '🚫'
+
+
+def get_btn_styles(is_join):
+    return {
+        'emoji': EMOJI_JOIN if not is_join else EMOJI_LEFT,
+        'style': ButtonStyle.green if not is_join else ButtonStyle.blurple 
+    }
 
 class RolesView(ui.View):
-    def __init__(self,  roles, user, timeout=15):
+    def __init__(self, guld, user, timeout=300):
+        self.guild = guld
+        self.user = user
         super().__init__(timeout=timeout)
 
-        for role in roles:
+        for role in filter(lambda r: str(r.color) == ROLE_COLOR, self.guild.roles):
             self.add_item(RoleButton(role=role, user=user))
 
-    async def on_timeout(self) -> None:
+    async def on_timeout(self):
+        await self.message.delete()
         return await super().on_timeout()
+
+    async def update_state(self):
+        member = await self.guild.fetch_member(self.user.id)
+
+        for child in self.children:
+            btn = get_btn_styles(child.custom_id in [str(user_role.id) for user_role in member.roles])
+            child.emoji = btn.get('emoji')
+            child.style = btn.get('style')
 
 class RoleButton(ui.Button):
     def __init__(self, role, user):
-        self.role=role
-        self.user=user
-        self.is_join=role.id in [user_role.id for user_role in user.roles]
-        super().__init__(label=f'{role.name} [{len(role.members)}]', emoji='➕' if not self.is_join else '🚫', style=ButtonStyle.green if not self.is_join else ButtonStyle.blurple )
+        self.role = role
+        self.user = user
+        btn = get_btn_styles(role.id in [user_role.id for user_role in user.roles])
 
+        super().__init__(
+            custom_id=str(role.id), 
+            label=role.name, 
+            emoji=btn.get('emoji'), 
+            style=btn.get('style')
+        )
 
-    async def callback(self, interaction):
-        if interaction.is_expired():
-            await interaction.response.send_message(content=f'Oops. Too late', ephemeral=True)
-            return
+    async def callback(self, interaction: Interaction):
+        view = self.view
 
         try:
-            if not self.role.id in [user_role.id for user_role in self.user.roles]:
+            if not self.role.id in [user_role.id for user_role in interaction.user.roles]:
                 await self.user.add_roles(self.role)
-                text_result = f"You added '{self.role.name}'"
+                content = f"You joined '{self.role.name}'"
             else:
                 await self.user.remove_roles(self.role)
-                text_result = f"You removed '{self.role.name}'"
+                content = f"You left '{self.role.name}'"
 
+            await view.update_state()
 
-            print(f'message.id {self.view.message.id}')
-            #await self.view.message.edit(content=text_result, view=self.view)
-            await interaction.response.edit_message(content=text_result, view=self.view)
-            # await interaction.response.defer()
+            await interaction.response.edit_message(content=content, view=view)
 
         except Exception as e:
-            await interaction.response.edit_message(content=f'Ooops. Error: {e}')
-
-        #await interaction.response.send_message(content=f"Actions with the role '{self.role.name}'", view=EditRoleButtons(role=self.role, ctx=self.ctx, is_join=self.is_join), ephemeral=True)
+            await interaction.response.edit_message(content=f'Try again because we got an error: {e}')
 
 
-class EditRoleButtons(ui.View):
-    def __init__(self, *, role, ctx, is_join):
-        self.role = role
-        self.ctx=ctx
-        super().__init__()
+class UserSelect(ui.UserSelect):
+    def __init__(self):
+        super().__init__(placeholder="Select an user to ask him to shut his mouth up")
 
-    @property
-    def is_join(self):
-        return self.role.id in [_r.id for _r in self.ctx.message.author.roles]
-    
-    @ui.button(label="Add Role", style=ButtonStyle.primary)
-    async def join_button(self, interaction:Interaction, button:ui.Button):
+    async def callback(self, interaction: Interaction):
+        view = self.view
+
         try:
-            await self.ctx.message.author.add_roles(self.role)
-            await interaction.response.edit_message(content=f"You've added '{self.role.name}'")
-        except Exception as e:
-            await interaction.response.edit_message(content=f'Ooops. Error: {e}')
+            user_id = interaction.data.get('values')[0]
 
-    @ui.button(label="Remove Role", style=ButtonStyle.danger)
-    async def leave_button(self, interaction:Interaction, button:ui.Button):
-        try:
-            await self.ctx.message.author.remove_roles(self.role)
-            await interaction.response.edit_message(content=f"You've removed '{self.role.name}'")
+            if user_id in STFU_USERS:
+                STFU_USERS.remove(user_id)
+                content = f'User {user_id} was removed from STFU list'
+            else:
+                STFU_USERS.append(user_id)
+                content = f'User {user_id} was added from STFU list'
+
+            await interaction.response.edit_message(content=f'{content}. Total: {len(STFU_USERS)}')
         except Exception as e:
-            await interaction.response.send_message(content=f'Oops. Error: {e}', ephemeral=True)
+            await interaction.response.edit_message(content=f'Try again because we got an error: {e}')
+
+
+class STFUView(ui.View):
+    def __init__(self, timeout=30):
+        super().__init__(timeout=timeout)
+        self.add_item(UserSelect())
+
+    async def on_timeout(self):
+        await self.message.delete()
+        return await super().on_timeout()

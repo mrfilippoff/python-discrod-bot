@@ -8,7 +8,7 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 EXTENSION_DIR = os.getenv("EXTENSIONS_DIR")
 
-intents = Intents.all()
+intents = Intents.default()
 intents.presences = True
 intents.guilds = True
 intents.members = True

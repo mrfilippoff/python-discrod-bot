@@ -54,9 +54,9 @@ class Chat(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.hybrid_command(name='stfu', with_app_command=True)
     async def stfu(self, ctx):
-        """Ask someone to shut up?"""
+        """Ask someone to shut up"""
         view = STFUView()
-        await ctx.send('Select user again to delete him from STFU list', view=view, ephemeral=True)
+        view.message = await ctx.send('Select user again to delete him from STFU list', view=view, ephemeral=True)
 
 async def setup(bot):
     await bot.add_cog(Chat(bot))

@@ -4,6 +4,7 @@ from discord.ext import commands
 from music import ytdl
 from music import voice
 
+from discord import Member
 
 class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -42,14 +43,16 @@ class Music(commands.Cog):
         await ctx.send('An error occurred: {}'.format(str(error)))
         
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        if not after.channel and before.channel and member == self.bot.user:
-            voice_state = self.voice_states[before.channel.guild.id]
+    async def on_voice_state_update(self, member: Member, before, after):
+            try:
+                if not after.channel and before.channel and member == self.bot.user:
+                    voice_state = self.voice_states[before.channel.guild.id]
+                if voice_state:
+                    await voice_state.stop()
 
-            if voice_state:
-                await voice_state.stop()
-
-            del self.voice_states[before.channel.guild.id]
+                del self.voice_states[before.channel.guild.id]
+            except Exception as e:
+                print(f'on_voice_state_update error {e}')
 
     @commands.Cog.listener()
     async def on_message(self, message):

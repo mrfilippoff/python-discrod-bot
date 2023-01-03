@@ -11,52 +11,68 @@ class Music(commands.Cog):
         self.bot = bot
         self.voice_states = {}
 
+
     def get_voice_state(self, ctx: commands.Context):
-        """Returns or creates voice.VoiceState for the guild defined in the passed ctx"""
         state = self.voice_states.get(ctx.guild.id)
-        if not state or not state.exists:
+
+        if not state:
             state = voice.VoiceState(self.bot, ctx)
             self.voice_states[ctx.guild.id] = state
 
         return state
 
     def cog_unload(self):
-        """Unloads the music cog"""
         for state in self.voice_states.values():
-            self.bot.loop.create_task(state.stop())
+            try:
+                state.audio_player.cancel()
+                if state.voice:
+                    self.bot.loop.create_task(state.voice.disconnect())
+            except:
+                pass
 
     def cog_check(self, ctx: commands.Context):
-        """Prevent calling commands in DM's"""
         if not ctx.guild:
             raise commands.NoPrivateMessage('This command can\'t be used in DM channels.')
 
         return True
 
     async def cog_before_invoke(self, ctx: commands.Context):
-        #Set voice state for every command
         ctx.voice_state = self.get_voice_state(ctx)
 
     async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
         await ctx.send('An error occurred: {}'.format(str(error)))
+        
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        if not after.channel and before.channel and member == self.bot.user:
+            voice_state = self.voice_states[before.channel.guild.id]
+
+            if voice_state:
+                await voice_state.stop()
+
+            del self.voice_states[before.channel.guild.id]
 
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.id != self.bot.user.id:
             print(f"{message.guild}/{message.channel}/{message.author.name}>{message.content}")
+
             if message.embeds:
                 print(message.embeds[0].to_dict())
 
     @commands.hybrid_command(name='join', with_app_command=True)
     async def _join(self, ctx: commands.Context):
         """Joins a voice channel."""
+        voice_state = self.get_voice_state(ctx)
 
         destination = ctx.author.voice.channel
-        if ctx.voice_state.voice:
-            await ctx.voice_state.voice.move_to(destination)
+
+        if voice_state.voice:
+            await voice_state.voice.move_to(destination)
             return
 
-        ctx.voice_state.voice = await destination.connect()
-        await ctx.send('Tryin to join... just a moment')
+        voice_state.voice = await destination.connect()
+        await ctx.send('Trying to join... just a moment')
 
     @commands.has_permissions(manage_guild=True)
     @commands.hybrid_command(name='summon', with_app_command=True)
@@ -65,15 +81,18 @@ class Music(commands.Cog):
         If no channel was specified, it joins your channel.
         """
 
+        voice_state = self.get_voice_state(ctx)
+
         if not channel and not ctx.author.voice:
             raise voice.VoiceError('You are neither connected to a voice channel nor specified a channel to join.')
 
         destination = channel or ctx.author.voice.channel
-        if ctx.voice_state.voice:
-            await ctx.voice_state.voice.move_to(destination)
+
+        if voice_state.voice:
+            await voice_state.voice.move_to(destination)
             return
 
-        ctx.voice_state.voice = await destination.connect()
+        voice_state.voice = await destination.connect()
 
         await ctx.send('Very well...')
 
@@ -81,10 +100,12 @@ class Music(commands.Cog):
     async def _leave(self, ctx: commands.Context):
         """Clears the queue and leaves the voice channel."""
 
-        if not ctx.voice_state.voice:
+        voice_state = self.get_voice_state(ctx)
+
+        if not voice_state.voice:
             return await ctx.send('Not connected to any voice channel.')
 
-        await ctx.voice_state.stop()
+        await voice_state.stop()
         del self.voice_states[ctx.guild.id]
 
         await ctx.send('Ok bruh...cya')
@@ -94,27 +115,34 @@ class Music(commands.Cog):
     async def _volume(self, ctx: commands.Context, *, volume: int):
         """Sets the volume of the player."""
 
-        if not ctx.voice_state.is_playing:
+        voice_state = self.get_voice_state(ctx)
+
+        if not voice_state.is_playing:
             return await ctx.send('Nothing being played at the moment.')
 
         if 0 > volume > 100:
             return await ctx.send('Volume must be between 0 and 100')
 
-        ctx.voice_state.volume = volume / 100
+        voice_state.volume = volume / 100
         await ctx.send('Volume of the player set to {}%'.format(volume))
 
     @commands.hybrid_command(name='now', with_app_command=True)
     async def _now(self, ctx: commands.Context):
         """Displays the currently playing song."""
-        embed = ctx.voice_state.current.create_embed()
+
+        voice_state = self.get_voice_state(ctx)
+
+        embed = voice_state.current.create_embed()
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name='pause', with_app_command=True)
     async def _pause(self, ctx: commands.Context):
         """Pauses the currently playing song."""
+        voice_state = self.get_voice_state(ctx)
 
-        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
-            ctx.voice_state.voice.pause()
+
+        if voice_state.is_playing and voice_state.voice.is_playing():
+            voice_state.voice.pause()
 
         await ctx.send('Paused a currently playing song')
 
@@ -123,8 +151,10 @@ class Music(commands.Cog):
     async def _resume(self, ctx: commands.Context):
         """Resumes a currently paused song."""
 
-        if ctx.voice_state.is_playing and ctx.voice_state.voice.is_paused():
-            ctx.voice_state.voice.resume()
+        voice_state = self.get_voice_state(ctx)
+
+        if voice_state.is_playing and c.voice_state.voice.is_paused():
+            voice_state.voice.resume()
 
         await ctx.send('Resumed a currently paused song')
 
@@ -132,14 +162,16 @@ class Music(commands.Cog):
     async def _stop(self, ctx: commands.Context):
         """Stops playing song and clears the queue."""
 
-        ctx.voice_state.songs.clear()
+        voice_state = self.get_voice_state(ctx)
 
-        if ctx.voice_state.autoplay:
-            ctx.voice_state.autoplay = False
+        voice_state.songs.clear()
+
+        if voice_state.autoplay:
+            voice_state.autoplay = False
             await ctx.send('Autoplay is now turned off')
             
-        if ctx.voice_state.is_playing:
-            ctx.voice_state.voice.stop()
+        if voice_state.is_playing:
+            voice_state.voice.stop()
         
         await ctx.send('Stoped')
 
@@ -153,9 +185,10 @@ class Music(commands.Cog):
             return await ctx.send('Not playing any music right now...')
 
         voter = ctx.message.author
+
         if voter == ctx.voice_state.current.requester:
             ctx.voice_state.skip()
-            await ctx.send('Skiped')
+            await ctx.send('Skipping track')
 
         elif voter.id not in ctx.voice_state.skip_votes:
             ctx.voice_state.skip_votes.add(voter.id)
@@ -163,7 +196,7 @@ class Music(commands.Cog):
 
             if total_votes >= 3:
                 ctx.voice_state.skip()
-                await ctx.send('Skiped by votes')
+                await ctx.send('Skipping track by votes')
             else:
                 await ctx.send('Skip vote added, currently at **{}/3**'.format(total_votes))
 
@@ -274,15 +307,20 @@ class Music(commands.Cog):
         A list of these sites can be found here: https://rg3.github.io/youtube-dl/supportedsites.html
         """
 
+        voice_state = self.get_voice_state(ctx)
+
+        if voice_state.voice is None:
+            success = await ctx.invoke(self._summon)
+
+            if not success:
+                return
+            
         async with ctx.typing():
             try:
                 source = await ytdl.YTDLSource.create_source(ctx, search, loop=self.bot.loop)
             except ytdl.YTDLError as e:
                 await ctx.send('An error occurred while processing this request: {}'.format(str(e)))
             else:
-                if not ctx.voice_state.voice:
-                    await ctx.invoke(self._join)
-
                 song = voice.Song(source)
                 await ctx.voice_state.songs.put(song)
                 await ctx.send('Enqueued {}'.format(str(source)))
@@ -299,3 +337,5 @@ class Music(commands.Cog):
             
 async def setup(bot):
     await bot.add_cog(Music(bot))
+
+    

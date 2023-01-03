@@ -1,10 +1,9 @@
 import math
-
 import discord
 from discord.ext import commands
-
 from music import ytdl
 from music import voice
+
 
 class Music(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -74,27 +73,6 @@ class Music(commands.Cog):
         voice_state.voice = await destination.connect()
         await ctx.send('Trying to join... just a moment')
 
-    @commands.has_permissions(manage_guild=True)
-    @commands.hybrid_command(name='summon', with_app_command=True)
-    async def _summon(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
-        """Summons the bot to a voice channel.
-        If no channel was specified, it joins your channel.
-        """
-
-        voice_state = self.get_voice_state(ctx)
-
-        if not channel and not ctx.author.voice:
-            raise voice.VoiceError('You are neither connected to a voice channel nor specified a channel to join.')
-
-        destination = channel or ctx.author.voice.channel
-
-        if voice_state.voice:
-            await voice_state.voice.move_to(destination)
-            return
-
-        voice_state.voice = await destination.connect()
-
-        await ctx.send('Very well...')
 
     @commands.hybrid_command(name='leave', with_app_command=True)
     async def _leave(self, ctx: commands.Context):
@@ -111,7 +89,6 @@ class Music(commands.Cog):
         await ctx.send('Ok bruh...cya')
 
     @commands.hybrid_command(name='volume', with_app_command=True)
-    @commands.is_owner()
     async def _volume(self, ctx: commands.Context, *, volume: int):
         """Sets the volume of the player."""
 
@@ -166,14 +143,11 @@ class Music(commands.Cog):
 
         voice_state.songs.clear()
 
-        if voice_state.autoplay:
-            voice_state.autoplay = False
-            await ctx.send('Autoplay is now turned off')
-            
+           
         if voice_state.is_playing:
             voice_state.voice.stop()
         
-        await ctx.send('Stoped')
+        await ctx.send('Stopped')
 
     @commands.hybrid_command(name='skip', with_app_command=True)
     async def _skip(self, ctx: commands.Context):
@@ -285,18 +259,6 @@ class Music(commands.Cog):
         ctx.voice_state.loop = not ctx.voice_state.loop
         await ctx.send('Looping a song is now turned ' + ('on' if ctx.voice_state.loop else 'off') )
 
-    @commands.hybrid_command(name='autoplay', with_app_command=True)
-    async def _autoplay(self, ctx: commands.Context):
-        """Automatically queue a new song that is related to the song at the end of the queue.
-        Invoke this command again to toggle autoplay the song.
-        """
-
-        if not ctx.voice_state.is_playing:
-            return await ctx.send('Nothing being played at the moment.')
-
-        # Inverse boolean value to loop and unloop.
-        ctx.voice_state.autoplay = not ctx.voice_state.autoplay
-        await ctx.send('Autoplay after end of queue is now ' + ('on' if ctx.voice_state.autoplay else 'off') )
 
     @commands.hybrid_command(name='play', with_app_command=True)
     async def _play(self, ctx: commands.Context, *, search: str):
@@ -308,12 +270,6 @@ class Music(commands.Cog):
         """
 
         voice_state = self.get_voice_state(ctx)
-
-        if voice_state.voice is None:
-            success = await ctx.invoke(self._summon)
-
-            if not success:
-                return
             
         async with ctx.typing():
             try:
@@ -321,6 +277,9 @@ class Music(commands.Cog):
             except ytdl.YTDLError as e:
                 await ctx.send('An error occurred while processing this request: {}'.format(str(e)))
             else:
+                if not voice_state.voice:
+                    await ctx.invoke(self._join)
+
                 song = voice.Song(source)
                 await ctx.voice_state.songs.put(song)
                 await ctx.send('Enqueued {}'.format(str(source)))

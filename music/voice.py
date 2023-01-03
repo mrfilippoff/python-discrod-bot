@@ -64,12 +64,9 @@ class VoiceState:
         self.voice = None
         self.next = asyncio.Event()
         self.songs = SongQueue()
-        self.song_history = []
-        self.exists = True
 
         self._loop = False
-        self._autoplay = True
-        self._volume = 0.5
+        self._volume = 1
         self.skip_votes = set()
 
         self.audio_player = bot.loop.create_task(self.audio_player_task())
@@ -86,14 +83,6 @@ class VoiceState:
         self._loop = value
 
     @property
-    def autoplay(self):
-        return self._autoplay
-
-    @autoplay.setter
-    def autoplay(self, value: bool):
-        self._autoplay = value
-
-    @property
     def volume(self):
         return self._volume
 
@@ -108,95 +97,29 @@ class VoiceState:
     async def audio_player_task(self):
         while True:
             self.next.clear()
-            self.now = None
 
-            if self.loop == False:
-                # If autoplay is turned on wait 3 seconds for a new song.
-                # If no song is found find a new one,
-                # else if autoplay is turned off try to get the
-                # next song within 3 minutes.
+            if not self.loop:
+                # Try to get the next song within 3 minutes.
                 # If no song will be added to the queue in time,
                 # the player will disconnect due to performance
                 # reasons.
-                if self.autoplay and self.current:
-                    try:
-                        async with timeout(3): 
-                            self.current = await self.songs.get()
-                    except asyncio.TimeoutError:
-                        # Spoof user agent to show whole page.
-                        headers = {'User-Agent' : 'Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)'}
-                        song_url = self.current.source.url
-                        # Get the page
-                        async with httpx.AsyncClient() as client:
-                            response = await client.get(song_url, headers=headers)
+                try:
+                    async with timeout(604800):  # 3 minutes
+                        self.current = await self.songs.get()
+                except asyncio.TimeoutError:
+                    self.bot.loop.create_task(self.stop())
+                    return
 
-                        soup = BeautifulSoup(response.text, features='lxml')
+            self.current.source.volume = self._volume
+            self.voice.play(self.current.source, after=self.play_next_song)
+            await self.current.source.channel.send(embed=self.current.create_embed())
 
-                        # Parse all the recommended videos out of the response and store them in a list
-                        recommended_urls = []
-                        for li in soup.find_all('li', class_='related-list-item'):
-                            a = li.find('a')
-
-                            # Only videos (no mixes or playlists)
-                            if 'content-link' in a.attrs['class']:
-                                recommended_urls.append(f'https://www.youtube.com{a.get("href")}')
-
-                        ctx = self._ctx
-
-                        # Chose the next song so that it wasnt played recently
-
-                        next_song = recommended_urls[0]
-
-                        for recommended_url in recommended_urls:
-                            not_in_history = True
-                            for song in self.song_history[:15]:
-                                if recommended_url == song.source.url:
-                                    not_in_history = False
-                                    break
-                            
-                            if not_in_history:
-                                next_song = recommended_url
-                                break
-
-                        async with ctx.typing():
-                            try:
-                                source = await ytdl.YTDLSource.create_source(ctx, next_song, loop=self.bot.loop)
-                            except ytdl.YTDLError as e:
-                                await ctx.send('An error occurred while processing this request: {}'.format(str(e)))
-                                self.bot.loop.create_task(self.stop())
-                                self.exists = False
-                                return
-                            else:
-                                song = Song(source)
-                                self.current = song
-                                await ctx.send('Autoplaying {}'.format(str(source)))
-                        
-                else:
-                    try:
-                        async with timeout(180):  # 3 minutes
-                            self.current = await self.songs.get()
-                    except asyncio.TimeoutError:
-                        self.bot.loop.create_task(self.stop())
-                        self.exists = False
-                        return
-                
-                self.song_history.insert(0, self.current)
-                self.current.source.volume = self._volume
-                self.voice.play(self.current.source, after=self.play_next_song)
-                await self.current.source.channel.send(embed=self.current.create_embed())
-            
-            #If the song is looped
-            elif self.loop == True:
-                self.song_history.insert(0, self.current)
-                self.now = discord.FFmpegPCMAudio(self.current.source.stream_url, **ytdl.YTDLSource.FFMPEG_OPTIONS)
-                self.voice.play(self.now, after=self.play_next_song)
-            
             await self.next.wait()
 
     def play_next_song(self, error=None):
         if error:
             raise VoiceError(str(error))
-        
+
         self.next.set()
 
     def skip(self):

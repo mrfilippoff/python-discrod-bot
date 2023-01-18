@@ -2,11 +2,7 @@ import re
 import random
 from discord.utils import get
 from discord import Message
-
 from emoji import EMOJI
-from db import Role
-
-EVERYONE = '@everyone'
 
 
 def get_emoji(guild, emoji):
@@ -35,21 +31,3 @@ async def guild_send(guild, **kwargs):
             await guild.system_channel.send(**kwargs)
         except Exception:
             pass
-
-
-def public_roles(guild):
-    result_roles = []
-
-    for role in guild.roles:
-        try:
-            db_role = Role.get_role(role.id)
-            emoji = db_role.emoji or None
-            if not role.managed and role.name != EVERYONE and not db_role.is_available or not emoji:
-                continue
-            result_roles.append({
-                'db': db_role,
-                'dd': role
-            })
-        except Exception:
-            pass
-    return result_roles

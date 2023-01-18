@@ -4,7 +4,7 @@ import datetime
 from discord.ext import commands
 import chat
 from discord import MessageType
-from utils import random_reactions
+from .utils.misc import random_reactions
 from ui import STFUView
 from global_vars import STFU_USERS
 

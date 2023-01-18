@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 from music import ytdl
 from music import voice
-
 from discord import Member
 
 class Music(commands.Cog):
@@ -133,7 +132,7 @@ class Music(commands.Cog):
 
         voice_state = self.get_voice_state(ctx)
 
-        if voice_state.is_playing and c.voice_state.voice.is_paused():
+        if voice_state.is_playing and voice_state.voice.is_paused():
             voice_state.voice.resume()
 
         await ctx.send('Resumed a currently paused song')
@@ -203,30 +202,6 @@ class Music(commands.Cog):
                  .set_footer(text='Viewing page {}/{}'.format(page, pages)))
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='history', with_app_command=True)
-    async def _history(self, ctx: commands.Context, *, page: int = 1):
-        """Shows the player's history.
-        You can optionally specify the page to show. Each page contains 10 elements.
-        """
-
-        if len(ctx.voice_state.song_history) == 0:
-            return await ctx.send('Empty history.')
-
-        items_per_page = 10
-        pages = math.ceil(len(ctx.voice_state.song_history) / items_per_page)
-
-        start = (page - 1) * items_per_page
-        end = start + items_per_page
-
-        queue = ''
-        for i, song in enumerate(ctx.voice_state.song_history[start:end], start=start):
-            queue += '`{0}.` [**{1.source.title}**]({1.source.url})\n'.format(i + 1, song)
-
-        embed = (discord.Embed(description='**{} tracks:**\n\n{}'.format(len(ctx.voice_state.song_history), queue))
-                 .set_footer(text='Viewing page {}/{}'.format(page, pages)))
-
-        await ctx.send(embed=embed)
-
     @commands.hybrid_command(name='shuffle', with_app_command=True)
     async def _shuffle(self, ctx: commands.Context):
         """Shuffles the queue."""
@@ -249,18 +224,6 @@ class Music(commands.Cog):
 
         await ctx.send(f'Removed a song from the queue by index {index}')
 
-    @commands.hybrid_command(name='loop', with_app_command=True)
-    async def _loop(self, ctx: commands.Context):
-        """Loops the currently playing song.
-        Invoke this command again to unloop the song.
-        """
-
-        if not ctx.voice_state.is_playing:
-            return await ctx.send('Nothing being played at the moment.')
-
-        # Inverse boolean value to loop and unloop.
-        ctx.voice_state.loop = not ctx.voice_state.loop
-        await ctx.send('Looping a song is now turned ' + ('on' if ctx.voice_state.loop else 'off') )
 
 
     @commands.hybrid_command(name='play', with_app_command=True)

@@ -18,7 +18,7 @@ class Chat(commands.Cog):
 
         if str(message.author.id) in STFU_USERS:
             async with message.channel.typing():
-                shut_text = random.choice(['Hey! Shut the fuck up', 'STFU', 'Shut up, ok?', 'Shut your mouth right now'])
+                shut_text = random.choice(['Hey! Shut the fuck up', 'STFU!', 'Shut up, ok?', 'Shut your mouth right now'])
                 await message.reply(shut_text)
                 return
 

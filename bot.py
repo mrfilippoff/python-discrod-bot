@@ -16,9 +16,10 @@ from discord.ext import commands
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
-GUILD = os.getenv("GUILD")
+GUILD = int(os.getenv("GUILD"))
 
 initial_extensions = (
+    'extensions.service',
     'extensions.chat',
     'extensions.manage',
     'extensions.music',
@@ -26,6 +27,7 @@ initial_extensions = (
     'extensions.poll',
     'extensions.random_status_game',
     'extensions.voip',
+    'extensions.minigames'
 )
 
 command_prefix = os.getenv("COMMAND_PREFIX") or '+'

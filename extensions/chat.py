@@ -15,7 +15,6 @@ class Chat(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message):
-
         if str(message.author.id) in STFU_USERS:
             async with message.channel.typing():
                 shut_text = random.choice(['Hey! Shut the fuck up', 'STFU!', 'Shut up, ok?', 'Shut your mouth right now'])
@@ -54,7 +53,7 @@ class Chat(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     @commands.hybrid_command(name='stfu', with_app_command=True)
     async def stfu(self, ctx):
-        """Ask someone to shut up"""
+        """Ask someone shut up"""
         view = STFUView()
         view.message = await ctx.send('Select user again to delete him from STFU list', view=view, ephemeral=True)
 

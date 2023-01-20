@@ -40,3 +40,5 @@ httpx==0.23.0
 beautifulsoup4==4.11.1
 youtube-dl==2021.12.17
 ytdl==1.0.0rc5
+lru_dict
+git+https://github.com/Rapptz/discord-ext-menus@fbb8803779373357e274e1540b368365fd9d8074

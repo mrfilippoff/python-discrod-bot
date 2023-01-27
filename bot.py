@@ -20,7 +20,7 @@ GUILD = int(os.getenv("GUILD"))
 
 initial_extensions = (
     'extensions.service',
-    'extensions.chat',
+    #'extensions.chat',
     'extensions.manage',
     'extensions.music',
     'extensions.misc',

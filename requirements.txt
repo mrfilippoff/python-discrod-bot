@@ -28,10 +28,10 @@ PyYAML==6.0
 regex==2022.10.31
 requests==2.24.0
 six==1.15.0
-tokenizers==0.13.2
-torch==1.13.0
+#tokenizers==0.13.2
+#torch==1.13.0
 tqdm==4.64.1
-transformers==4.24.0
+#transformers==4.24.0
 typing_extensions==4.4.0
 urllib3==1.25.9
 websockets==8.1
@@ -40,5 +40,4 @@ httpx==0.23.0
 beautifulsoup4==4.11.1
 youtube-dl==2021.12.17
 ytdl==1.0.0rc5
-lru_dict
 git+https://github.com/Rapptz/discord-ext-menus@fbb8803779373357e274e1540b368365fd9d8074

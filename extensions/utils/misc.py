@@ -1,7 +1,7 @@
 import re
 import random
 from discord.utils import get
-from discord import Message
+from discord import Message, File
 from emoji import EMOJI
 
 
@@ -31,3 +31,8 @@ async def guild_send(guild, **kwargs):
             await guild.system_channel.send(**kwargs)
         except Exception:
             pass
+
+async def guild_send_image(guild, path: str):
+    with open(path, 'rb') as f:
+        picture = File(f)
+        await guild_send(guild, file=picture)

@@ -8,8 +8,8 @@ from extensions.utils.context import Context
 from extensions.utils.config import Config
 from typing import Union, Optional
 
-from discord import (Intents, AllowedMentions, Message, Guild, 
-    HTTPException, utils, Interaction, Member, ShardInfo, Embed, Webhook)
+from discord import (Intents, AllowedMentions, Message, Guild,
+                     HTTPException, utils, Interaction, Member, ShardInfo, Embed, Webhook)
 
 from discord.ext import commands
 
@@ -20,7 +20,6 @@ GUILD = int(os.getenv("GUILD"))
 
 initial_extensions = (
     'extensions.service',
-    #'extensions.chat',
     'extensions.manage',
     'extensions.music',
     'extensions.misc',
@@ -34,9 +33,11 @@ command_prefix = os.getenv("COMMAND_PREFIX") or '+'
 
 log = logging.getLogger(__name__)
 
+
 class TeaBot(commands.AutoShardedBot):
     def __init__(self):
-        allowed_mentions = AllowedMentions(roles=False, everyone=False, users=True)
+        allowed_mentions = AllowedMentions(
+            roles=False, everyone=False, users=True)
         intents = Intents(
             guilds=True,
             members=True,
@@ -60,9 +61,12 @@ class TeaBot(commands.AutoShardedBot):
             enable_debug_events=True,
         )
 
-        self.resumes: defaultdict[int, list[datetime.datetime]] = defaultdict(list)
-        self.identifies: defaultdict[int, list[datetime.datetime]] = defaultdict(list)
-        self.spam_control = commands.CooldownMapping.from_cooldown(2, 12.0, commands.BucketType.user)
+        self.resumes: defaultdict[int,
+                                  list[datetime.datetime]] = defaultdict(list)
+        self.identifies: defaultdict[int,
+                                     list[datetime.datetime]] = defaultdict(list)
+        self.spam_control = commands.CooldownMapping.from_cooldown(
+            2, 12.0, commands.BucketType.user)
         self._auto_spam_count = Counter()
 
     async def setup_hook(self) -> None:
@@ -76,7 +80,6 @@ class TeaBot(commands.AutoShardedBot):
                 await self.load_extension(extension)
             except Exception as e:
                 log.exception('Failed to load extension %s.', extension)
-
 
     async def log_spammer(self, ctx: Context, message: Message, _: float, *, autoblock: bool = False):
         if not autoblock:
@@ -152,12 +155,14 @@ class TeaBot(commands.AutoShardedBot):
         one_week_ago = utils.utcnow() - datetime.timedelta(days=7)
 
         for _, dates in self.identifies.items():
-            to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
+            to_remove = [index for index, dt in enumerate(
+                dates) if dt < one_week_ago]
             for index in reversed(to_remove):
                 del dates[index]
 
         for _, dates in self.resumes.items():
-            to_remove = [index for index, dt in enumerate(dates) if dt < one_week_ago]
+            to_remove = [index for index, dt in enumerate(
+                dates) if dt < one_week_ago]
             for index in reversed(to_remove):
                 del dates[index]
 
@@ -174,7 +179,8 @@ class TeaBot(commands.AutoShardedBot):
         elif isinstance(error, commands.CommandInvokeError):
             original = error.original
             if not isinstance(original, HTTPException):
-                log.exception('In %s:', ctx.command.qualified_name, exc_info=original)
+                log.exception(
+                    'In %s:', ctx.command.qualified_name, exc_info=original)
         elif isinstance(error, commands.ArgumentParsingError):
             await ctx.send(str(error))
 
@@ -186,7 +192,8 @@ class TeaBot(commands.AutoShardedBot):
         if member is not None:
             return member
 
-        shard: ShardInfo = self.get_shard(guild.shard_id)  # type: ignore  # will never be None
+        # type: ignore  # will never be None
+        shard: ShardInfo = self.get_shard(guild.shard_id)
         if shard.is_ws_ratelimited():
             try:
                 member = await guild.fetch_member(member_id)

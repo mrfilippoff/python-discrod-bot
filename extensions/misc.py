@@ -9,6 +9,7 @@ import io
 from .utils.translator import translate
 from .utils.context import Context
 
+
 # from https://github.com/Rapptz/RoboDanny/blob/rewrite/cogs/funhouse.py
 class Misc(commands.Cog):
     def __init__(self, bot):
@@ -64,8 +65,10 @@ class Misc(commands.Cog):
             return await ctx.send(f'An error occurred: {e.__class__.__name__}: {e}')
 
         embed = discord.Embed(title='Translated', colour=0x4284F3)
-        embed.add_field(name=f'From {result.source_language}', value=result.original, inline=False)
-        embed.add_field(name=f'To {result.target_language}', value=result.translated, inline=False)
+        embed.add_field(
+            name=f'From {result.source_language}', value=result.original, inline=False)
+        embed.add_field(name=f'To {result.target_language}',
+                        value=result.translated, inline=False)
         await ctx.send(embed=embed)
 
 

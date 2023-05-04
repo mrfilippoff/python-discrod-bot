@@ -1,7 +1,7 @@
 import asyncio
 import os
 from discord.ext import commands
-from discord import MessageType, Object, Member
+from discord import MessageType, Object
 from collections import Counter
 from .utils.misc import guild_send, random_reactions, guild_send_image
 from .utils.context import GuildContext
@@ -12,7 +12,8 @@ RECYCLED_LIMIT = 5
 RECYCLED_TIME_LIMIT = 60
 RECYCLED_EMOJI = '♻️'
 
-GUILD = Object(id= os.getenv("GUILD") or 0)
+GUILD = Object(id=os.getenv("GUILD") or 0)
+
 
 class Manage(commands.Cog):
     def __init__(self, bot):
@@ -68,9 +69,8 @@ class Manage(commands.Cog):
     @commands.Cog.listener()
     async def on_member_unban(self, guild, user):
         message = f'Oh! Look this: **{user.name}** was forgiven by the gods and he can come back to us!' \
-                    f'Prepare your cocks!'
+            f'Prepare your cocks!'
         return await guild_send(guild, content=message)
-
 
     @commands.hybrid_command(name='my_roles', with_app_command=True)
     async def my_roles(self, ctx):
@@ -110,7 +110,8 @@ class Manage(commands.Cog):
         Members without can search up to 25 messages.
         """
         strategy = self._basic_cleanup_strategy
-        is_author_admin = ctx.channel.permissions_for(ctx.author).manage_messages
+        is_author_admin = ctx.channel.permissions_for(
+            ctx.author).manage_messages
 
         if ctx.channel.permissions_for(ctx.me).manage_messages:
             if is_author_admin:
@@ -125,14 +126,18 @@ class Manage(commands.Cog):
 
         spammers = await strategy(ctx, search)
         deleted = sum(spammers.values())
-        messages = [f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
+        messages = [
+            f'{deleted} message{" was" if deleted == 1 else "s were"} removed.']
 
         if deleted:
             messages.append('')
-            spammers = sorted(spammers.items(), key=lambda t: t[1], reverse=True)
-            messages.extend(f'- **{author}**: {count}' for author, count in spammers)
+            spammers = sorted(spammers.items(),
+                              key=lambda t: t[1], reverse=True)
+            messages.extend(
+                f'- **{author}**: {count}' for author, count in spammers)
 
         await ctx.send('\n'.join(messages))
+
 
 async def setup(bot):
     await bot.add_cog(Manage(bot))

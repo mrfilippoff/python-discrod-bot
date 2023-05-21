@@ -8,8 +8,9 @@ EMOJI_LEFT = '🚫'
 def get_btn_styles(is_join):
     return {
         'emoji': EMOJI_JOIN if not is_join else EMOJI_LEFT,
-        'style': ButtonStyle.green if not is_join else ButtonStyle.blurple 
+        'style': ButtonStyle.green if not is_join else ButtonStyle.blurple
     }
+
 
 class RolesView(ui.View):
     def __init__(self, guld, user, timeout=300):
@@ -17,7 +18,9 @@ class RolesView(ui.View):
         self.user = user
         super().__init__(timeout=timeout)
 
-        for role in filter(lambda r: str(r.color) == ROLE_COLOR, self.guild.roles):
+        for role in filter(
+            lambda r: str(r.color) == ROLE_COLOR, self.guild.roles
+        ):
             self.add_item(RoleButton(role=role, user=user))
 
     async def on_timeout(self):
@@ -28,20 +31,23 @@ class RolesView(ui.View):
         member = await self.guild.fetch_member(self.user.id)
 
         for child in self.children:
-            btn = get_btn_styles(child.custom_id in [str(user_role.id) for user_role in member.roles])
+            btn = get_btn_styles(child.custom_id in [str(
+                user_role.id) for user_role in member.roles])
             child.emoji = btn.get('emoji')
             child.style = btn.get('style')
+
 
 class RoleButton(ui.Button):
     def __init__(self, role, user):
         self.role = role
         self.user = user
-        btn = get_btn_styles(role.id in [user_role.id for user_role in user.roles])
+        btn = get_btn_styles(
+            role.id in [user_role.id for user_role in user.roles])
 
         super().__init__(
-            custom_id=str(role.id), 
-            label=role.name, 
-            emoji=btn.get('emoji'), 
+            custom_id=str(role.id),
+            label=role.name,
+            emoji=btn.get('emoji'),
             style=btn.get('style')
         )
 
@@ -94,3 +100,39 @@ class STFUView(ui.View):
     async def on_timeout(self):
         await self.message.delete()
         return await super().on_timeout()
+
+
+class RoleGreetingModal(ui.Modal, title='Tea bot role options'):
+    def __init__(self, bot) -> None:
+        super().__init__()
+        self.bot = bot
+
+    @property
+    def options(self):
+        return self.bot.options
+
+    greet_text = ui.TextInput(
+        label="Greeting text",
+        placeholder='sends with mentioned username into #greet_channel',
+    )
+
+    greet_channel = ui.TextInput(
+        label='Greeting channel ID')
+
+    greet_text_delay = ui.TextInput(
+        label="Greeting text timeout",
+        placeholder='after N-seconds the text will be deleted',
+        default=60
+    )
+
+    report_channel = ui.TextInput(
+        label='Report channel ID',
+        placeholder="For receiving complaints from users")
+
+    async def on_submit(self, interaction: Interaction) -> None:
+        await self.options.put("greet_text", self.greet_text.value)
+        await self.options.put("greet_channel", self.greet_channel.value)
+        await self.options.put("report_channel", self.report_channel.value)
+        await self.options.put("greet_text_delay", self.greet_text_delay.value)
+        await interaction.response.send_message('Successfully saved',
+                                                ephemeral=True)

@@ -1,17 +1,17 @@
 import asyncio
 import os
 from discord.ext import commands
-from discord import MessageType, Object
+from discord import (Member, MessageType, Object)
+
 from collections import Counter
 from .utils.misc import guild_send, random_reactions, guild_send_image
 from .utils.context import GuildContext
-from ui import RolesView
 
 
 RECYCLED_LIMIT = 5
 RECYCLED_TIME_LIMIT = 60
 RECYCLED_EMOJI = '♻️'
-
+DEFAULT_GREET = 'pick a role for your game to see voice/text channels'
 GUILD = Object(id=os.getenv("GUILD") or 0)
 
 
@@ -26,11 +26,31 @@ class Manage(commands.Cog):
         await self.bot.tree.sync(guild=GUILD)
 
     @commands.Cog.listener()
-    async def on_member_remove(self, member):
-        await guild_send(member.guild, content=f'Ladies and gentlemen! **{member.display_name}** has left the server!')
+    async def on_member_remove(self, member: Member):
+        await guild_send(
+            member.guild,
+            content=f'Ladies and gentlemen! **{member.display_name}** has left the server!'
+        )
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_member_join(self, member: Member):
+        try:
+            channel_id = int(self.bot.options.get(
+                "greet_channel", 0))
+            greet_text = self.bot.options.get("greet_text", DEFAULT_GREET)
+            channel = self.bot.get_channel(channel_id)
+
+            await channel.send(
+                f'{member.mention} {greet_text}',
+                delete_after=int(self.bot.options.get(
+                    "greet_text_delay") or 10)
+            )
+
+        except Exception:
+            pass
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, member: Member):
         if reaction.emoji != RECYCLED_EMOJI and reaction.emoji != '🤖':
             await reaction.message.add_reaction(reaction.emoji)
 
@@ -71,12 +91,6 @@ class Manage(commands.Cog):
         message = f'Oh! Look this: **{user.name}** was forgiven by the gods and he can come back to us!' \
             f'Prepare your cocks!'
         return await guild_send(guild, content=message)
-
-    @commands.hybrid_command(name='my_roles', with_app_command=True)
-    async def my_roles(self, ctx):
-        """Manage user roles"""
-        view = RolesView(ctx.guild, ctx.message.author)
-        view.message = await ctx.send('Update your game roles right now!', view=view, ephemeral=True)
 
     async def _basic_cleanup_strategy(self, ctx: GuildContext, search: int):
         count = 0

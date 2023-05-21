@@ -6,17 +6,23 @@ import logging
 from collections import Counter, defaultdict
 from extensions.utils.context import Context
 from extensions.utils.config import Config
+from extensions.utils import checks
 from typing import Union, Optional
 
 from discord import (Intents, AllowedMentions, Message, Guild,
-                     HTTPException, utils, Interaction, Member, ShardInfo, Embed, Webhook)
+                     HTTPException, utils, Interaction, Member,
+                     ShardInfo, Embed, Object, ui, ButtonStyle)
 
 from discord.ext import commands
+
+from ui import RolesView, RoleGreetingModal
 
 load_dotenv()
 
 TOKEN = os.getenv("TOKEN")
 GUILD = int(os.getenv("GUILD"))
+
+GUILD_OBJ = Object(id=GUILD or 0)
 
 initial_extensions = (
     'extensions.service',
@@ -74,6 +80,7 @@ class TeaBot(commands.AutoShardedBot):
         self.bot_app_info = await self.application_info()
         self.owner_id = self.bot_app_info.owner.id
         self.blacklist: Config[bool] = Config('blacklist.json')
+        self.options: Config[bool] = Config('teabot.json')
 
         for extension in initial_extensions:
             try:
@@ -209,4 +216,64 @@ class TeaBot(commands.AutoShardedBot):
 
 
 bot = TeaBot()
+
+
+@bot.event
+async def on_ready():
+    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    print('------')
+
+
+@bot.tree.command()
+async def hello(interaction: Interaction):
+    """Says hello!"""
+    await interaction.response.send_message(f'Hi, {interaction.user.mention}')
+
+
+@bot.tree.command()
+async def my_roles(interaction: Interaction):
+    """Manage user roles"""
+    view = RolesView(interaction.guild, interaction.user)
+    await interaction.response.send_message(
+        'Update your game roles right now!',
+        view=view
+    )
+
+
+@bot.tree.command()
+@checks.is_admin()
+async def teabot(interaction: Interaction):
+    """Teabot role options [for admin only]"""
+    await interaction.response.send_modal(RoleGreetingModal(bot))
+
+
+@bot.tree.context_menu(name='Report to Moderators')
+async def report_message(interaction: Interaction, message: Message):
+    await interaction.response.send_message(
+        f'Thanks for reporting this message by {message.author.mention} to our moderators.',
+        ephemeral=True
+    )
+
+    try:
+        log_channel = interaction.guild.get_channel(
+            int(bot.options.get("report_channel")) or 0
+        )
+
+        embed = Embed(title='Reported Message')
+        if message.content:
+            embed.description = message.content
+
+        embed.set_author(name=message.author.display_name,
+                         icon_url=message.author.display_avatar.url)
+        embed.timestamp = message.created_at
+
+        url_view = ui.View()
+        url_view.add_item(ui.Button(label='Go to Message',
+                                    style=ButtonStyle.url, url=message.jump_url))
+
+        await log_channel.send(embed=embed, view=url_view)
+    except Exception as e:
+        print(e)
+
+
 bot.run(TOKEN)

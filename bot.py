@@ -236,7 +236,8 @@ async def my_roles(interaction: Interaction):
     view = RolesView(interaction.guild, interaction.user)
     await interaction.response.send_message(
         'Update your game roles right now!',
-        view=view
+        view=view,
+        ephemeral=True
     )
 
 

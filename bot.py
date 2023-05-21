@@ -241,7 +241,7 @@ async def my_roles(interaction: Interaction):
 
 
 @bot.tree.command()
-@checks.is_admin()
+@checks.is_manager()
 async def teabot(interaction: Interaction):
     """Teabot role options [for admin only]"""
     await interaction.response.send_modal(RoleGreetingModal(bot))

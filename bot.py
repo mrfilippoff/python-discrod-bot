@@ -38,12 +38,11 @@ initial_extensions = (
 command_prefix = os.getenv("COMMAND_PREFIX") or '+'
 
 log = logging.getLogger(__name__)
-
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
 class TeaBot(commands.AutoShardedBot):
     def __init__(self):
-        allowed_mentions = AllowedMentions(
-            roles=False, everyone=False, users=True)
+        allowed_mentions = AllowedMentions(roles=False, everyone=False, users=True)
         intents = Intents(
             guilds=True,
             members=True,
@@ -54,8 +53,8 @@ class TeaBot(commands.AutoShardedBot):
             reactions=True,
             message_content=True,
         )
-
         super().__init__(
+            proxy='http://127.0.0.1:10808',
             command_prefix=command_prefix,
             description='TeaBot helps you',
             pm_help=None,
@@ -76,7 +75,9 @@ class TeaBot(commands.AutoShardedBot):
         self._auto_spam_count = Counter()
 
     async def setup_hook(self) -> None:
-        self.session = aiohttp.ClientSession()
+
+        
+        #self.session = aiohttp.ClientSession()
         self.bot_app_info = await self.application_info()
         self.owner_id = self.bot_app_info.owner.id
         self.blacklist: Config[bool] = Config('blacklist.json')
@@ -156,7 +157,7 @@ class TeaBot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         await super().close()
-        await self.session.close()
+        #await self.session.close()
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = utils.utcnow() - datetime.timedelta(days=7)
@@ -277,4 +278,4 @@ async def report_message(interaction: Interaction, message: Message):
         print(e)
 
 
-bot.run(TOKEN)
+bot.run(TOKEN, log_level=logging.INFO)

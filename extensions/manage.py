@@ -1,7 +1,8 @@
 import asyncio
 import os
+import requests
 from discord.ext import commands
-from discord import (Member, MessageType, Object)
+from discord import (Member, MessageType, Object, File)
 
 from collections import Counter
 from .utils.misc import guild_send, random_reactions, guild_send_image
@@ -9,10 +10,23 @@ from .utils.context import GuildContext
 
 
 RECYCLED_LIMIT = 5
-RECYCLED_TIME_LIMIT = 60
 RECYCLED_EMOJI = '♻️'
+RECYCLED_TIME_LIMIT = 60
+
+NO_PENIS_EMOJI = ':No_Penis_TeaServer:'
+NO_PENIS_LIMIT = 1
+NO_PENIS_TIME_LIMIT = 3
+#NO_PENIS_GUILD = Object(id=1342131380032639017)
+#NO_PENIS_CHANNEL_ID = 342131380032639017
+NO_PENIS_CHANNEL_ID=797937369651216414
+
 DEFAULT_GREET = 'pick a role for your game to see voice/text channels'
 GUILD = Object(id=os.getenv("GUILD") or 0)
+
+EXCLUDE_ENOJIS_LIST = [RECYCLED_EMOJI, '🤖']
+
+def is_no_penis_emoji(emoji: str):
+    return 'No_Penis_TeaServer' in emoji
 
 
 class Manage(commands.Cog):
@@ -50,8 +64,12 @@ class Manage(commands.Cog):
             pass
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, member: Member):
-        if reaction.emoji != RECYCLED_EMOJI and reaction.emoji != '🤖':
+    async def on_reaction_add(self, reaction, _: Member):
+        print('OK?', is_no_penis_emoji(reaction.emoji.name))
+        if  len(reaction.message.attachments) > 0:
+            print(reaction.message.attachments, reaction.emoji)
+
+        if reaction.emoji not in EXCLUDE_ENOJIS_LIST and not is_no_penis_emoji(reaction.emoji.name):
             await reaction.message.add_reaction(reaction.emoji)
 
         if reaction.emoji == RECYCLED_EMOJI and reaction.count == RECYCLED_LIMIT and len(reaction.message.attachments) > 0:
@@ -64,6 +82,23 @@ class Manage(commands.Cog):
                 await reaction.message.delete()
                 await guild_send(guild, content=f'Ladies and gentlemen! **{reaction.message.author.display_name}** has posted a bit of an old shit and i have already removed it. God bless me! ✝️')
                 await guild_send_image(guild, os.path.abspath('images/terminator-terminator-robot.gif'))
+            except Exception as e:
+                print(e)
+                pass
+
+        if is_no_penis_emoji(reaction.emoji.name) and reaction.count == NO_PENIS_LIMIT and len(reaction.message.attachments) > 0:
+            alert = await reaction.message.reply(f'Hey {reaction.message.author.mention}! {NO_PENIS_LIMIT} people are sure that you posted a dick.. oops i mean "penis"')
+            await asyncio.sleep(NO_PENIS_TIME_LIMIT)
+
+            try:
+                guild = reaction.message.author.guild
+                await alert.delete()
+                files_a = [await attachment.to_file(filename=attachment.filename) for attachment in reaction.message.attachments]
+                need_jesus_chan = self.bot.get_channel(NO_PENIS_CHANNEL_ID)
+                await need_jesus_chan.send('here we go', files=files_a)
+
+                await reaction.message.delete()
+
             except Exception as e:
                 print(e)
                 pass

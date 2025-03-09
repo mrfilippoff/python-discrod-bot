@@ -14,11 +14,11 @@ RECYCLED_EMOJI = '♻️'
 RECYCLED_TIME_LIMIT = 60
 
 NO_PENIS_EMOJI = ':No_Penis_TeaServer:'
-NO_PENIS_LIMIT = 1
-NO_PENIS_TIME_LIMIT = 3
+NO_PENIS_LIMIT = 3
+NO_PENIS_TIME_LIMIT =20
 #NO_PENIS_GUILD = Object(id=1342131380032639017)
-#NO_PENIS_CHANNEL_ID = 342131380032639017
-NO_PENIS_CHANNEL_ID=797937369651216414
+NO_PENIS_CHANNEL_ID = 342131380032639017
+#NO_PENIS_CHANNEL_ID=797937369651216414  //test
 
 DEFAULT_GREET = 'pick a role for your game to see voice/text channels'
 GUILD = Object(id=os.getenv("GUILD") or 0)
@@ -87,7 +87,7 @@ class Manage(commands.Cog):
                 pass
 
         if is_no_penis_emoji(reaction.emoji.name) and reaction.count == NO_PENIS_LIMIT and len(reaction.message.attachments) > 0:
-            alert = await reaction.message.reply(f'Hey {reaction.message.author.mention}! {NO_PENIS_LIMIT} people are sure that you posted a dick.. oops i mean "penis"')
+            alert = await reaction.message.reply(f'Hey {reaction.message.author.mention}! {NO_PENIS_LIMIT} people are sure that you have posted a dick..  you def need jesus')
             await asyncio.sleep(NO_PENIS_TIME_LIMIT)
 
             try:
@@ -95,8 +95,7 @@ class Manage(commands.Cog):
                 await alert.delete()
                 files_a = [await attachment.to_file(filename=attachment.filename) for attachment in reaction.message.attachments]
                 need_jesus_chan = self.bot.get_channel(NO_PENIS_CHANNEL_ID)
-                await need_jesus_chan.send('here we go', files=files_a)
-
+                await need_jesus_chan.send(f'Hey {reaction.message.author.mention}! Your dick pics over here' , files=files_a)
                 await reaction.message.delete()
 
             except Exception as e:

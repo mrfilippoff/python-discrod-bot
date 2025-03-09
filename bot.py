@@ -54,7 +54,7 @@ class TeaBot(commands.AutoShardedBot):
             message_content=True,
         )
         super().__init__(
-            proxy='http://127.0.0.1:10808',
+            #proxy='http://127.0.0.1:10808',
             command_prefix=command_prefix,
             description='TeaBot helps you',
             pm_help=None,

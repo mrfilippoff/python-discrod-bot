@@ -1,14 +1,13 @@
 import asyncio
 import os
-import requests
 from discord.ext import commands
-from discord import (Member, MessageType, Object, File)
+from discord import (Member, MessageType, Object, PartialEmoji, Emoji)
 
 from collections import Counter
 from .utils.misc import guild_send, random_reactions, guild_send_image
 from .utils.context import GuildContext
 
-
+ROBOT_EMOJI = '🤖'
 RECYCLED_LIMIT = 5
 RECYCLED_EMOJI = '♻️'
 RECYCLED_TIME_LIMIT = 60
@@ -16,17 +15,17 @@ RECYCLED_TIME_LIMIT = 60
 NO_PENIS_EMOJI = ':No_Penis_TeaServer:'
 NO_PENIS_LIMIT = 3
 NO_PENIS_TIME_LIMIT =20
-#NO_PENIS_GUILD = Object(id=1342131380032639017)
+
 NO_PENIS_CHANNEL_ID = 1342131380032639017  
-#NO_PENIS_CHANNEL_ID=797937369651216414  //test
+#NO_PENIS_CHANNEL_ID=797937369651216414  //test bot TOKEN
 
 DEFAULT_GREET = 'pick a role for your game to see voice/text channels'
 GUILD = Object(id=os.getenv("GUILD") or 0)
 
-EXCLUDE_ENOJIS_LIST = [RECYCLED_EMOJI, '🤖']
+EXCLUDE_ENOJIS_LIST = [RECYCLED_EMOJI, ROBOT_EMOJI]
 
-def is_no_penis_emoji(emoji: str):
-    return 'No_Penis_TeaServer' in emoji
+def is_no_penis_emoji(emoji: PartialEmoji|Emoji|str):
+    return 'No_Penis_TeaServer' in emoji if type(emoji) is str else 'No_Penis_TeaServer' in emoji.name
 
 
 class Manage(commands.Cog):
@@ -65,10 +64,7 @@ class Manage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, _: Member):
-        if  len(reaction.message.attachments) > 0:
-            print(reaction.message.attachments, reaction.emoji)
-
-        if reaction.emoji not in EXCLUDE_ENOJIS_LIST and not is_no_penis_emoji(reaction.emoji.name):
+        if reaction.emoji not in EXCLUDE_ENOJIS_LIST and not is_no_penis_emoji(reaction.emoji):
             await reaction.message.add_reaction(reaction.emoji)
 
         if reaction.emoji == RECYCLED_EMOJI and reaction.count == RECYCLED_LIMIT and len(reaction.message.attachments) > 0:
@@ -85,7 +81,7 @@ class Manage(commands.Cog):
                 print(e)
                 pass
 
-        if is_no_penis_emoji(reaction.emoji.name) and reaction.count == NO_PENIS_LIMIT and len(reaction.message.attachments) > 0:
+        if is_no_penis_emoji(reaction.emoji) and reaction.count == NO_PENIS_LIMIT and len(reaction.message.attachments) > 0:
             alert = await reaction.message.reply(f'Hey {reaction.message.author.mention}! {NO_PENIS_LIMIT} people are sure that you have posted a dick..  you def need jesus')
             await asyncio.sleep(NO_PENIS_TIME_LIMIT)
 

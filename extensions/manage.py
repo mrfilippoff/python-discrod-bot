@@ -65,7 +65,6 @@ class Manage(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, _: Member):
-        print('OK?', is_no_penis_emoji(reaction.emoji.name))
         if  len(reaction.message.attachments) > 0:
             print(reaction.message.attachments, reaction.emoji)
 

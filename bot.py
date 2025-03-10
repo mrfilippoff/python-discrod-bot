@@ -77,7 +77,7 @@ class TeaBot(commands.AutoShardedBot):
     async def setup_hook(self) -> None:
 
         
-        #self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession()
         self.bot_app_info = await self.application_info()
         self.owner_id = self.bot_app_info.owner.id
         self.blacklist: Config[bool] = Config('blacklist.json')
@@ -157,7 +157,7 @@ class TeaBot(commands.AutoShardedBot):
 
     async def close(self) -> None:
         await super().close()
-        #await self.session.close()
+        await self.session.close()
 
     def _clear_gateway_data(self) -> None:
         one_week_ago = utils.utcnow() - datetime.timedelta(days=7)

@@ -2,7 +2,7 @@ import asyncio
 import os
 from discord.ext import commands
 from discord import (Member, MessageType, Object, PartialEmoji, Emoji)
-
+from typing import Union
 from collections import Counter
 from .utils.misc import guild_send, random_reactions, guild_send_image
 from .utils.context import GuildContext
@@ -24,7 +24,7 @@ GUILD = Object(id=os.getenv("GUILD") or 0)
 
 EXCLUDE_ENOJIS_LIST = [RECYCLED_EMOJI, ROBOT_EMOJI]
 
-def is_no_penis_emoji(emoji: PartialEmoji|Emoji|str):
+def is_no_penis_emoji(emoji: Union[PartialEmoji,Emoji,str]):
     return 'No_Penis_TeaServer' in emoji if type(emoji) is str else 'No_Penis_TeaServer' in emoji.name
 
 

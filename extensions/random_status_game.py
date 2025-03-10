@@ -3,22 +3,23 @@ import random
 import asyncio
 from discord.ext import commands
 GAMES = [
-    'Battlefield 3',
+    'Battlefield 2',
     'Battlefield 4',
     'Minecraft',
     'Apex Legends',
-    'Rocket League',
-    'Doom 2',
-    'Half Life',
-    'Hell Let Loose',
-    'Battlefield 1',
-    'Pornhub',
     'New World',
     'TV',
     'Onlyfans',
-    'with your mom\'s tits',
-    'with poops',
-    'dicks'
+    'Battlefield 9',
+    'Rust',
+    'Counter-Strike 2',
+    'Onlyfans Poker',
+    'Swedish Balls: XXL',
+    'Video XXX',
+    'Dorset Whore Adventures',
+    'Danger Sneeze: WC',
+    'GTA VI',
+    'GTA II'
 ]
 
 

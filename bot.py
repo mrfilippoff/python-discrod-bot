@@ -27,12 +27,12 @@ GUILD_OBJ = Object(id=GUILD or 0)
 initial_extensions = (
     'extensions.service',
     'extensions.manage',
-    'extensions.music',
+    #'extensions.music',
     'extensions.misc',
     'extensions.poll',
     'extensions.random_status_game',
     'extensions.voip',
-    'extensions.minigames'
+    #'extensions.minigames'
 )
 
 command_prefix = os.getenv("COMMAND_PREFIX") or '+'

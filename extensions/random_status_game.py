@@ -17,7 +17,7 @@ GAMES = [
     'Swedish Balls: XXL',
     'Video XXX',
     'Dorset Whore Adventures',
-    'Danger Sneeze: WC',
+    'Dangerous Sneeze: WC',
     'GTA VI',
     'GTA II'
 ]
